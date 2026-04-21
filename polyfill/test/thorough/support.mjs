@@ -1102,12 +1102,23 @@ export function sensibleRoundingModes(duration, str, smallestUnit, roundingIncre
 }
 
 export async function time(functionBody) {
+  const iterations = (typeof globalThis.BENCH_ITERATIONS === 'number' && globalThis.BENCH_ITERATIONS > 1)
+    ? globalThis.BENCH_ITERATIONS
+    : 1;
+  // Untimed warmup: validates snapshots + warms JIT; not included in timing
+  await functionBody(nowBigInt());
+  // Timed phase: steady-state only, snapshot I/O skipped
+  globalThis._benchSkipSnapshots = true;
   const start = nowBigInt();
-  const total = await functionBody(start);
+  let total;
+  for (let i = 0; i < iterations; i++) {
+    total = await functionBody(start);
+  }
   const finish = nowBigInt();
+  delete globalThis._benchSkipSnapshots;
   const elapsed = Number(finish - start) / 1_000_000_000;
-  output(`\n${total} tests finished in ${elapsed.toFixed(1)} s`);
-  return elapsed;
+  output(`\n${total} tests finished in ${(elapsed * 1000).toFixed(1)} ms (x${iterations})`);
+  return elapsed / iterations;
 }
 
 // Set up progress bar; don't print one if stdout isn't a terminal, instead use
@@ -1153,6 +1164,17 @@ export function getProgressBar(start, total) {
 }
 
 export async function withSnapshotsFromFile(path, testBody) {
+  if (globalThis._benchSkipSnapshots) {
+    testBody(
+      (_actual, _key) => {},
+      (callable, _key) => {
+        try { return callable(); }
+        catch (e) { if (e instanceof RangeError) return undefined; throw e; }
+      }
+    );
+    return;
+  }
+
   if (updateSnapshots) output(`Snapshot file ${path} will be updated`);
 
   let snapshotCount = 0;
