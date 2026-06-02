@@ -49,6 +49,29 @@ if (typeof process !== 'undefined' && process.argv?.length > 2) {
   updateSnapshots = true;
 }
 
+// Snapshot files can be very large. Use these to try to minimize repeated text
+export const abbrevs = {
+  ceil: 'c',
+  days: 'd',
+  expand: 'x',
+  floor: 'f',
+  halfCeil: 'hc',
+  halfExpand: 'hx',
+  halfEven: 'he',
+  halfFloor: 'hf',
+  halfTrunc: 'ht',
+  hours: 'h',
+  months: 'mo',
+  microseconds: 'us',
+  milliseconds: 'ms',
+  minutes: 'mn',
+  nanoseconds: 'n',
+  seconds: 's',
+  trunc: 't',
+  weeks: 'w',
+  years: 'y'
+};
+
 class AssertionError extends Error {}
 
 export function assertEqual(actual, expected, message) {
@@ -1063,6 +1086,19 @@ export const parseableAnnotations = [
   '[u-ca=ISO8601]',
   '[u-ca=iSo8601]'
 ];
+
+export const roundingGranularities = {
+  years: [1, 2, 10, 1e5, 547581],
+  months: [1, 2, 10, 1e6, 6570976],
+  weeks: [1, 2, 10, 1e7, 28571428],
+  days: [1, 2, 10, 1e7, 1e8 - 1, 1e9],
+  hours: [1, 2, 3, 4, 6, 8, 12],
+  minutes: [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30],
+  seconds: [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30],
+  milliseconds: [1, 2, 4, 5, 8, 10, 20, 25, 40, 50, 100, 125, 200, 250, 500],
+  microseconds: [1, 2, 4, 5, 8, 10, 20, 25, 40, 50, 100, 125, 200, 250, 500],
+  nanoseconds: [1, 2, 4, 5, 8, 10, 20, 25, 40, 50, 100, 125, 200, 250, 500]
+};
 
 export const roundingModes = [
   'ceil',
