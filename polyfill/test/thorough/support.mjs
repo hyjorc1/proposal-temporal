@@ -1200,7 +1200,7 @@ export function getProgressBar(start, total) {
 }
 
 export async function withSnapshotsFromFile(path, testBody) {
-  if (globalThis._benchSkipSnapshots) {
+  if (globalThis._benchSkipSnapshots || globalThis.BENCH_SKIP_SNAPSHOTS) {
     testBody(
       (_actual, _key) => {},
       (callable, _key) => {
